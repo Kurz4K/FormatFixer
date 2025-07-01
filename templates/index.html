@@ -1,1 +1,15 @@
 
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html>
+<head>
+  <title>AI Account Formatter</title>
+</head>
+<body style="font-family:sans-serif; text-align:center; padding:50px">
+  <h2>Upload a .txt File</h2>
+  <form action="/upload" method="post" enctype="multipart/form-data">
+    <input type="file" name="file" accept=".txt" required><br><br>
+    <button type="submit">Fix Format</button>
+  </form>
+</body>
+</html>
