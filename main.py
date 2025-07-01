@@ -1,15 +1,15 @@
-
 # main.py
 import os
 import re
 import aiofiles
 import asyncio
-from fastapi import FastAPI, File, UploadFile, Request, Form
-from fastapi.responses import HTMLResponse, FileResponse
+from fastapi import FastAPI, File, UploadFile, Request
+from fastapi.responses import HTMLResponse, FileResponse, PlainTextResponse
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from cohere import Client as CohereClient
 from pathlib import Path
+import traceback
 
 # == Config ==
 UPLOAD_DIR = "uploads"
@@ -20,7 +20,6 @@ co = CohereClient(COHERE_API_KEY)
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
-
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 # == Format Fix Logic ==
@@ -55,22 +54,27 @@ async def form_page(request: Request):
 
 @app.post("/upload")
 async def upload_file(file: UploadFile = File(...)):
-    contents = await file.read()
-    text = contents.decode("utf-8")
-    lines = text.strip().splitlines()
+    try:
+        contents = await file.read()
+        text = contents.decode("utf-8")
+        lines = text.strip().splitlines()
 
-    valid = [l for l in lines if is_valid_format(l)]
-    invalid = [l for l in lines if not is_valid_format(l)]
+        valid = [l for l in lines if is_valid_format(l)]
+        invalid = [l for l in lines if not is_valid_format(l)]
 
-    if invalid:
-        chunks = list(chunk_lines("\n".join(invalid)))
-        fixed = await fix_with_cohere(chunks)
-        all_lines = valid + fixed
-    else:
-        all_lines = valid
+        if invalid:
+            chunks = list(chunk_lines("\n".join(invalid)))
+            fixed = await fix_with_cohere(chunks)
+            all_lines = valid + fixed
+        else:
+            all_lines = valid
 
-    output_path = os.path.join(UPLOAD_DIR, f"fixed_{file.filename}")
-    async with aiofiles.open(output_path, "w") as f:
-        await f.write("\n".join(all_lines))
+        output_path = os.path.join(UPLOAD_DIR, f"fixed_{file.filename}")
+        async with aiofiles.open(output_path, "w") as f:
+            await f.write("\n".join(all_lines))
 
-    return FileResponse(output_path, filename=f"fixed_{file.filename}", media_type="text/plain")
+        return FileResponse(output_path, filename=f"fixed_{file.filename}", media_type="text/plain")
+
+    except Exception as e:
+        traceback.print_exc()
+        return PlainTextResponse(f"\u274c Internal Server Error:\n{e}", status_code=500)
