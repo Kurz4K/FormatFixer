@@ -3,4 +3,4 @@ aiofiles
 jinja2
 cohere
 uvicorn
-
+python-multipart
