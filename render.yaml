@@ -1,1 +1,10 @@
+services:
+  - type: web
+    name: RZX-Fixer
+    env: python
+    buildCommand: ""
+    startCommand: uvicorn main:app --host 0.0.0.0 --port 10000
+    envVars:
+      - key: COHERE_API_KEY
+        value: Bv3vsOp3mKvenUI28EuxtrhQ2bNio23dOYr2x5fb
 
