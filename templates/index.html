@@ -1,4 +1,3 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -6,94 +5,85 @@
   <title>AI Formatter</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <style>
-    * {
-      box-sizing: border-box;
-    }
-
+    * { box-sizing: border-box; }
     body {
-      margin: 0;
-      padding: 0;
-      font-family: "Segoe UI", sans-serif;
-      background: #f2f4f8;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
+      margin: 0; padding: 0; font-family: "Segoe UI", sans-serif;
+      background: #f2f4f8; display: flex; justify-content: center;
+      align-items: center; height: 100vh;
     }
-
     .card {
-      background: white;
-      padding: 2rem;
-      border-radius: 1rem;
-      box-shadow: 0 8px 16px rgba(0,0,0,0.1);
-      max-width: 90%;
-      width: 400px;
-      text-align: center;
+      background: white; padding: 2rem; border-radius: 1rem;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.1); max-width: 90%;
+      width: 400px; text-align: center;
     }
-
-    h2 {
-      color: #333;
-      margin-bottom: 1rem;
-    }
-
+    h2 { color: #333; margin-bottom: 1rem; }
     input[type="file"] {
-      border: 2px dashed #ccc;
-      padding: 1.2rem;
-      border-radius: 1rem;
-      background: #f9f9f9;
-      width: 100%;
-      margin-bottom: 1rem;
-      font-size: 1rem;
-      transition: border 0.3s ease;
+      border: 2px dashed #ccc; padding: 1.2rem; border-radius: 1rem;
+      background: #f9f9f9; width: 100%; margin-bottom: 1rem;
+      font-size: 1rem; transition: border 0.3s ease;
     }
-
-    input[type="file"]:focus {
-      border-color: #3b82f6;
-      outline: none;
-    }
-
+    input[type="file"]:focus { border-color: #3b82f6; outline: none; }
     button {
-      background: #3b82f6;
-      color: white;
-      padding: 0.9rem 1.5rem;
-      border: none;
-      border-radius: 0.75rem;
-      font-size: 1rem;
-      cursor: pointer;
-      transition: background 0.3s ease;
-      width: 100%;
+      background: #3b82f6; color: white; padding: 0.9rem 1.5rem;
+      border: none; border-radius: 0.75rem; font-size: 1rem;
+      cursor: pointer; transition: background 0.3s ease; width: 100%;
     }
-
-    button:hover {
-      background: #2563eb;
-    }
-
-    .footer {
-      margin-top: 1.5rem;
-      font-size: 0.8rem;
-      color: #999;
-    }
-
-    @media screen and (max-width: 500px) {
-      .card {
-        padding: 1.5rem;
-        border-radius: 0.75rem;
-      }
-
-      input[type="file"] {
-        padding: 1rem;
-      }
+    button:hover { background: #2563eb; }
+    .footer { margin-top: 1.5rem; font-size: 0.8rem; color: #999; }
+    #message {
+      margin-top: 1rem;
+      font-size: 0.9rem;
+      color: #28a745;
+      display: none;
     }
   </style>
 </head>
 <body>
   <div class="card">
     <h2>Fix Game Account File</h2>
-    <form action="/upload" method="post" enctype="multipart/form-data">
-      <input type="file" name="file" accept=".txt" required>
+    <form id="uploadForm">
+      <input type="file" id="fileInput" name="file" accept=".txt" required>
       <button type="submit">Fix Format</button>
     </form>
+    <div id="message">✅ File fixed! Downloading...</div>
     <div class="footer">RZX AI Formatter</div>
   </div>
+
+  <script>
+    const form = document.getElementById("uploadForm");
+    const fileInput = document.getElementById("fileInput");
+    const messageDiv = document.getElementById("message");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const formData = new FormData();
+      formData.append("file", file);
+
+      messageDiv.style.display = "none";
+
+      const response = await fetch("/upload", {
+        method: "POST",
+        body: formData
+      });
+
+      if (response.ok) {
+        const blob = await response.blob();
+        const downloadUrl = window.URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = "fixed_" + file.name;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        messageDiv.style.display = "block";
+      } else {
+        alert("❌ Error fixing file.");
+      }
+    });
+  </script>
 </body>
 </html>
+
